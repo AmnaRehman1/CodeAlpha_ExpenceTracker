@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        /* CSS Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #93dadf;
+        }
+
+        header {
+            background-color: #1c9ab1;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .expense-form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .expense-form input {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .expense-form button {
+            padding: 10px 20px;
+            background-color: #1066a8;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .expense-list {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .expense-item span {
+            flex: 1;
+        }
+
+        .expense-item button {
+            background-color: #ea2626;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .expense-item button.edit {
+            background-color: #0c5a0c;
+        }
+
+        .total {
+            text-align: right;
+            font-size: 18px;
+            color: #333;
+        }
+
+        footer {
+            background-color: #1c9ab1;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Expense Tracker</h1>
+</header>
+
+<main>
+    <div class="expense-form">
+        <input type="text" id="expense-name" placeholder="Expense Name">
+        <input type="number" id="expense-amount" placeholder="Amount ($)">
+        <button onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <div class="expense-list" id="expense-list">
+        <!-- Expense items will be dynamically added here -->
+    </div>
+
+    <div class="total" id="total-expenses">Total Expenses: $0.00</div>
+</main>
+
+<footer>
+    &copy; 2024 Amna Rehman| Expense Tracker website
+</footer>
+
+<script>
+    let expenses = [];
+
+    function addExpense() {
+        const name = document.getElementById('expense-name').value.trim();
+        const amount = parseFloat(document.getElementById('expense-amount').value);
+
+        if (name !== '' && !isNaN(amount) && amount > 0) {
+            const expense = {
+                id: Date.now(),
+                name: name,
+                amount: amount
+            };
+
+            expenses.push(expense);
+            displayExpenses();
+            saveExpensesToLocalStorage();
+        } else {
+            alert("Please enter a valid expense name and amount!");
+        }
+
+        document.getElementById('expense-name').value = '';
+        document.getElementById('expense-amount').value = '';
+    }
+
+    function displayExpenses() {
+        const expenseList = document.getElementById('expense-list');
+        expenseList.innerHTML = '';
+
+        let totalExpenses = 0;
+
+        expenses.forEach(expense => {
+            totalExpenses += expense.amount;
+
+            const expenseItem = document.createElement('div');
+            expenseItem.classList.add('expense-item');
+            expenseItem.innerHTML = `
+                <span>${expense.name}</span>
+                <span>$${expense.amount.toFixed(2)}</span>
+                <button class="edit" onclick="editExpense(${expense.id})">Edit</button>
+                <button onclick="confirmDelete(${expense.id})">Delete</button>
+            `;
+            expenseList.appendChild(expenseItem);
+        });
+
+        document.getElementById('total-expenses').innerText = `Total Expenses: $${totalExpenses.toFixed(2)}`;
+    }
+
+    function editExpense(id) {
+        const expenseToEdit = expenses.find(expense => expense.id === id);
+        if (!expenseToEdit) return;
+
+        document.getElementById('expense-name').value = expenseToEdit.name;
+        document.getElementById('expense-amount').value = expenseToEdit.amount;
+
+        deleteExpense(id);
+    }
+
+    function confirmDelete(id) {
+        const confirmation = window.confirm("Do you want to delete this expense?");
+        if (confirmation) {
+            deleteExpense(id);
+        }
+    }
+
+    function deleteExpense(id) {
+        expenses = expenses.filter(expense => expense.id !== id);
+        displayExpenses();
+        saveExpensesToLocalStorage();
+    }
+
+    function saveExpensesToLocalStorage() {
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+    }
+
+    function loadExpensesFromLocalStorage() {
+        const storedExpenses = localStorage.getItem('expenses');
+        if (storedExpenses) {
+            expenses = JSON.parse(storedExpenses);
+            console.log('Expenses loaded:', expenses);
+            displayExpenses();
+        }
+    }
+
+    loadExpensesFromLocalStorage();
+</script>
+
+</body>
+</html>
